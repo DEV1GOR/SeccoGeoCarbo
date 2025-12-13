@@ -1,0 +1,9 @@
+# Arquivos de ambiente (Não subir para o git)
+.env
+.venv
+env/
+venv/
+
+# Arquivos temporários do Python 
+__pycache__/
+*.pyc
