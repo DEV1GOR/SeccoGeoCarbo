@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from backend.database import get_supabase_client
+from backend.schemas import UserLogin 
 
 # Inicializa a aplicação
 app = FastAPI(title="SeccoGeoCarbo API")
@@ -22,3 +24,27 @@ def health_check():
         "status": "ok", 
         "message": "API SeccoGeoCarbo rodando 🚀"
     }
+
+# --- ROTA: LOGIN ---
+@app.post("/auth/login")
+def login(user: UserLogin):
+    try:
+        # Tenta fazer login com email e senha no Supabase
+        response = supabase.auth.sign_in_with_password({
+            "email": user.email,
+            "password": user.password
+        })
+        
+        # Se der certo, retorna o Token e os dados do usuário
+        return {
+            "access_token": response.session.access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": response.user.id,
+                "email": response.user.email
+            }
+        }
+
+    except Exception as e:
+        # Se der erro (senha errada, usuário não existe), retorna 401
+        raise HTTPException(status_code=401, detail="Email ou senha incorretos")
