@@ -6,3 +6,9 @@ class UserLogin(BaseModel):
 
 class ResetPasswordRequest(BaseModel):
     email: str
+
+class UserSign(BaseModel):
+    email: str
+    password: str
+    full_name: str
+    
