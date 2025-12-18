@@ -105,7 +105,7 @@ def login(user: UserLogin):
         # Se der erro (senha errada, usuário não existe), retorna 401
         raise HTTPException(status_code=401, detail="Email ou senha incorretos")
     
-# --- ROTA: RESETPASSWORD ---
+# --- ROTA: RESET PASSWORD ---
 
 @app.post("/auth/reset-password")
 def reset_password(data: ResetPasswordRequest):
