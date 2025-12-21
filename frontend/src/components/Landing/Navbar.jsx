@@ -33,7 +33,7 @@ const Navbar = () => {
       </div>
 
       <Link
-        to="/app"
+        to="/login"
         className="bg-[#10B981] hover:bg-green-600 text-white px-8 py-2 rounded-full font-bold transition shadow-lg inline-flex items-center justify-center"
       >
         Login
