@@ -1,4 +1,4 @@
-import logo from '../../assets/SECCO-LOGO.png';
+import logo from '../../assets/NovaLogoGeoCarbo.png';
 
 const Navbar = () => {
   return (
@@ -9,10 +9,7 @@ const Navbar = () => {
         {/* Logo responsivo: alturas em breakpoints diferentes */}
         <img src={logo} alt="Logo" className="h-8 sm:h-10 md:h-12 w-auto flex-shrink-0" />
 
-        {/* Texto responsivo: tamanhos diferentes e truncamento se necessário */}
-        <span className="font-bold text-green-900 text-sm sm:text-base md:text-lg uppercase tracking-wider truncate">
-          <strong>SECCO</strong> GeoCarbo
-        </span>
+
       </div>
     </nav>
   );
