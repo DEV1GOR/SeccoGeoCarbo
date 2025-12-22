@@ -1,4 +1,4 @@
-import logo from '../../assets/SECCO-LOGO.png';
+import logo from '../../assets/NovaLogoGeoCarbo.png';
 
 const NavbarRecupSenha = () => {
   return (
@@ -10,9 +10,6 @@ const NavbarRecupSenha = () => {
           className="h-8 sm:h-10 md:h-12 w-auto flex-shrink-0"
         />
 
-        <span className="font-bold text-green-900 text-sm sm:text-base md:text-lg uppercase tracking-wider truncate">
-          <strong>SECCO</strong> GeoCarbo
-        </span>
       </div>
     </nav>
   );
