@@ -1,5 +1,6 @@
 import { useState } from 'react'; 
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'; 
+import { Link } from 'react-router-dom';
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,9 +28,12 @@ const LoginForm = () => {
 
         {/* Link Esqueceu a Senha */}
         <div className="flex justify-end px-1">
-          <a href="#" className="text-xs text-gray-500 hover:text-green-700 hover:underline transition-colors">
+          <Link 
+            to="/forgot-password" 
+            className="text-xs text-gray-500 hover:text-green-700 hover:underline transition-colors"
+          >
             Esqueceu a senha?
-          </a>
+          </Link>
         </div>
         
         <button className="w-full bg-[#358a4d] hover:bg-green-800 text-white font-bold py-3 rounded-full mt-2 transition-all shadow-lg active:scale-95">
