@@ -6,9 +6,28 @@ const MainRecupSenha = () => {
   const [enviado, setEnviado] = useState(false);
   const [email, setEmail] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (email) setEnviado(true);
+    
+    if (!email) return;
+
+    try{
+        const response = await fetch("http://127.0.0.1:8000/auth/reset-password",{
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email }),
+        });
+
+        if (!response.ok){
+          console.error("Erro ao enviar o email.");
+          return;
+        }
+        setEnviado(true);
+    } catch (err){
+      console.error("Erro de conexão com o servidor:", err)
+    }
   };
 
   return (
