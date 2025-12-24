@@ -117,12 +117,14 @@ def login(user: UserLogin):
 def reset_password(data: ResetPasswordRequest):
     try:
         supabase.auth.reset_password_email(data.email)
-    except Exception:
-        pass
+    except Exception as e:
+        print("ERRO SUPABASE:", e)
+        raise HTTPException(status_code=500, detail=str(e))
 
-    return{
-        "message":"Se o email existir, enviaremos um link para redefinição de senha"
+    return {
+        "message": "Se o email existir, enviaremos um link para redefinição de senha"
     }
+
 
 # --- ROTA: ME ---
 
