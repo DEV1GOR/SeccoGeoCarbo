@@ -22,3 +22,9 @@ class PropertyResponse(PropertyCreate):
     id: str
     owner_id: str
 
+
+class UserSign(BaseModel):
+    email: str
+    password: str
+    full_name: str
+    
