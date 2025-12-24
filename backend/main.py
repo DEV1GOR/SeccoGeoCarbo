@@ -1,7 +1,11 @@
-from fastapi import FastAPI, HTTPException
+from urllib import response
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from uuid import UUID
+
+from backend.auth import get_current_user
 from backend.database import get_supabase_client
-from backend.schemas import ResetPasswordRequest, UserLogin 
+from backend.schemas import PropertyCreate, PropertyUpdate, ResetPasswordRequest, UserLogin
 
 # Cria o cliente supabase
 supabase = get_supabase_client()
@@ -64,4 +68,130 @@ def reset_password(data: ResetPasswordRequest):
 
     return{
         "message":"Se o email existir, enviaremos um link para redefinição de senha"
+    }
+
+# --- ROTA: ME ---
+
+@app.get("/me")
+def me(user = Depends(get_current_user)):
+    """
+    Retorna os dados do usuário atualmente autenticado.
+
+    Esta rota depende da função `get_current_user`, que:
+    - Extrai o token JWT do header Authorization
+    - Valida o token
+    - Identifica o usuário logado
+
+    Se o token for inválido ou inexistente, a requisição é bloqueada.
+    """
+    return {
+        "id": user.id,
+        "email": user.email
+    }
+
+# --- ROTA: PROPERTIES [CREATE] ---
+@app.post("/properties")
+def create_property(data: PropertyCreate, user = Depends(get_current_user)):
+    """
+    Cria uma nova propriedade.
+
+    - Requer autenticação (Bearer Token)
+    - Associa automaticamente a propriedade ao usuário logado
+    - Salva os dados no Supabase
+    """
+    property_data = {
+        "name": data.name,
+        "location": data.location,
+        "area_hectares": data.area_hectares,
+        "owner_id": user.id
+    }
+
+    response = supabase.table("properties").insert(property_data).execute()
+
+    if not response.data:
+        raise HTTPException(status_code=400, detail="Erro ao criar propriedade")
+
+    return response.data
+
+# --- ROTA: PROPERTIES [READ] ---
+@app.get("/properties")
+def list_property(user = Depends(get_current_user)):
+    """
+    Lista todas as propriedades do usuário autenticado.
+
+    Retorna apenas propriedades cujo owner_id
+    corresponde ao usuário logado.
+    """
+    response = (
+        supabase
+        .table("properties")
+        .select("*")
+        .eq("owner_id", user.id)
+        .execute()  
+    )
+
+    if response.data is None:
+        raise HTTPException(status_code=400, detail="Erro em buscar propriedades")
+    
+    return response.data
+
+# --- ROTA: PROPERTIES [UPDATE]
+@app.put("/properties/{property_id}")
+def update_property(property_id:UUID, data:PropertyUpdate, user = Depends(get_current_user)):
+    """
+    Atualiza uma propriedade existente.
+
+    - Apenas o dono da propriedade pode atualizar
+    - Campos não enviados não são alterados
+    - Requer autenticação
+    """
+    update_data = {}
+
+    if data.name is not None:
+        update_data["name"] = data.name
+    if data.location is not None:
+        update_data["location"] = data.location
+    if data.area_hectares is not None:
+        update_data["area_hectares"] = data.area_hectares
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="Nenhum dado enviado para atualização")
+    
+    response = (
+        supabase.table("properties")
+        .update(update_data)
+        .eq("id", property_id)
+        .eq("owner_id", user.id)
+        .execute()
+    )
+
+    if not response.data:
+        raise HTTPException(status_code=400, detail='Propriedade não encontrada ou não pertence ao usuário')
+    
+    return response.data
+
+# --- ROTA: PROPERTIES [DELETE] ---
+
+@app.delete("/properties/{property_id}")
+def delete_property(property_id: UUID, user = Depends(get_current_user)):
+    """
+    Remove uma propriedade do sistema.
+
+    - Apenas o dono da propriedade pode excluir
+    - Requer autenticação
+    """
+    response = (
+        supabase
+        .table("properties")
+        .delete()
+        .eq("id",property_id)
+        .eq("owner_id",user.id)
+        .execute()
+    )
+
+    if not response.data:
+        raise HTTPException(status_code=400, detail='Propriedade não encontrada ou não pertence ao usuário')
+    
+    return {
+        "message":"Propriedade removida com sucesso"
     }
