@@ -8,7 +8,7 @@ __pycache__/
 venv/
 .env
 *.pyc
-.venv
+.venv/
 
 # Arquivos de sistema
 .DS_Store
