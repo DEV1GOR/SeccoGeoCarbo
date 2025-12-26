@@ -1,32 +1,51 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-// 1. Importe o seu novo componente de Login que acabamos de ajustar
+
+// Páginas Públicas
 import LoginPage from "./pages/Login.jsx";
 import ForgotPassword from "./pages/Forgot-Password.jsx";
-import MainLayout from "./components/Layout/MainLayout";
-import Home from "./pages/Home";
 import Landing from "./pages/Landing";
+import DashboardLayout from "./layouts/DashboardLayout";
+import DashboardHome from "./pages/Dashboard/Home";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Rota inicial: Você pode escolher entre a Landing Page ou o Login */}
-        {/* Se quiser que abra direto no login, use: <Navigate to="/login" replace /> */}
+        {/* Rota inicial */}
         <Route path="/" element={<Landing />} />
 
-        {/* 2. Rota de Login: Onde está o seu novo design com fundo de deserto */}
+        {/* Rotas de Autenticação */}
         <Route path="/login" element={<LoginPage />} />
-
-        {/* 3. Rota de Recuperação de Senha */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* 4. Rotas Privadas (Dashboard): Acessadas via /app */}
-        <Route path="/app" element={<MainLayout />}>
-          <Route index element={<Home />} />
-          <Route path="map" element={<div>Mapa (Em breve)</div>} />
+        {/* 2. Rota do Dashboard (Nova Estrutura) */}
+        {/* Mudei de /app para /dashboard para ficar mais semântico */}
+        <Route path="/dashboard" element={<DashboardLayout />}>
+          {/* O index é a tela Home com os gráficos que criamos */}
+          <Route index element={<DashboardHome />} />
+
+          {/* Placeholders para os outros botões do Sidebar não darem erro 404 */}
+          <Route
+            path="monitoramento"
+            element={
+              <div className="p-8">🚧 Tela de Monitoramento em construção</div>
+            }
+          />
+          <Route
+            path="relatorio"
+            element={
+              <div className="p-8">🚧 Tela de Relatórios em construção</div>
+            }
+          />
+          <Route
+            path="configuracao"
+            element={
+              <div className="p-8">🚧 Tela de Configurações em construção</div>
+            }
+          />
         </Route>
 
-        {/* 5. Rota de Segurança (404): Redireciona qualquer link errado para o login */}
+        {/* Rota de Segurança (404) */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
