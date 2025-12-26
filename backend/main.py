@@ -1,8 +1,5 @@
-from urllib import response
-
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
-
 from uuid import UUID
 
 from backend.auth import get_current_user
@@ -12,17 +9,21 @@ from backend.schemas import PropertyCreate, PropertyUpdate, ResetPasswordRequest
 # Cria o cliente supabase
 supabase = get_supabase_client()
 
-
 # Inicializa a aplicação
 app = FastAPI(title="SeccoGeoCarbo API")
 
-# Configura CORS (Permite que o Frontend acesse o Backend)
+# --- CONFIGURAÇÃO DO CORS (CORRIGIDO) ---
+origins = [
+    "http://localhost:5173",      # Vite Local
+    "http://127.0.0.1:5173",      # Vite Local (IP)
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Libera todas as origens (Bloquearemos em produção)
-    allow_credentials=True,
-    allow_methods=["*"],  # Libera todos os métodos (GET, POST, etc)
-    allow_headers=["*"],
+    allow_origins=origins,     # Permite apenas o Frontend conhecido
+    allow_credentials=True,    # Permite cookies e headers de auth
+    allow_methods=["*"],       # Libera todos os métodos (GET, POST, etc)
+    allow_headers=["*"],       # Libera todos os headers
 )
 
 # --- Rotas ---
@@ -41,7 +42,6 @@ def signup(user: UserSign):
     try:
         #Query para validar a existencia do email cadastrado
         existing_user = supabase.table("profiles").select("email").eq("email", user.email.lower()).execute()
-        #print(existing_user)
             
         #Chamando o método para criar o user no SupaBase
         response = supabase.auth.sign_up({
@@ -65,7 +65,7 @@ def signup(user: UserSign):
         
     except Exception as e: 
         #Printando o erro completo para ver o que ele retorna
-        #print(f"Erro completo: {e}")
+        print(f"Erro completo: {e}")
 
         #Se o email já estiver cadastrado
         if existing_user.data:
@@ -84,7 +84,7 @@ def signup(user: UserSign):
         #Caso seja outro erro, retoanr uma resposta genérica
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Erro ao criar o usuário"
+            detail=f"ERRO REAL: {str(e)}"
         )
 
 # --- ROTA: LOGIN ---
@@ -132,13 +132,6 @@ def reset_password(data: ResetPasswordRequest):
 def me(user = Depends(get_current_user)):
     """
     Retorna os dados do usuário atualmente autenticado.
-
-    Esta rota depende da função `get_current_user`, que:
-    - Extrai o token JWT do header Authorization
-    - Valida o token
-    - Identifica o usuário logado
-
-    Se o token for inválido ou inexistente, a requisição é bloqueada.
     """
     return {
         "id": user.id,
@@ -150,10 +143,6 @@ def me(user = Depends(get_current_user)):
 def create_property(data: PropertyCreate, user = Depends(get_current_user)):
     """
     Cria uma nova propriedade.
-
-    - Requer autenticação (Bearer Token)
-    - Associa automaticamente a propriedade ao usuário logado
-    - Salva os dados no Supabase
     """
     property_data = {
         "name": data.name,
@@ -174,9 +163,6 @@ def create_property(data: PropertyCreate, user = Depends(get_current_user)):
 def list_property(user = Depends(get_current_user)):
     """
     Lista todas as propriedades do usuário autenticado.
-
-    Retorna apenas propriedades cujo owner_id
-    corresponde ao usuário logado.
     """
     response = (
         supabase
@@ -196,10 +182,6 @@ def list_property(user = Depends(get_current_user)):
 def update_property(property_id:UUID, data:PropertyUpdate, user = Depends(get_current_user)):
     """
     Atualiza uma propriedade existente.
-
-    - Apenas o dono da propriedade pode atualizar
-    - Campos não enviados não são alterados
-    - Requer autenticação
     """
     update_data = {}
 
@@ -232,9 +214,6 @@ def update_property(property_id:UUID, data:PropertyUpdate, user = Depends(get_cu
 def delete_property(property_id: UUID, user = Depends(get_current_user)):
     """
     Remove uma propriedade do sistema.
-
-    - Apenas o dono da propriedade pode excluir
-    - Requer autenticação
     """
     response = (
         supabase
@@ -251,3 +230,47 @@ def delete_property(property_id: UUID, user = Depends(get_current_user)):
     return {
         "message":"Propriedade removida com sucesso"
     }
+
+# --- ROTA: VERIFICAÇÃO DE USUÁRIO (Checklist) ---
+@app.get("/api/users/me")
+def check_user_exists(user = Depends(get_current_user)):
+    """
+    Checklist Backend:
+    Valida se o usuário existe na tabela 'profiles'.
+    """
+    try:
+        # O ID do usuário vem do token validado pelo get_current_user
+        user_id = user.id
+        
+        # Nome da tabela personalizada onde os dados extras do usuário estão armazenados
+        tabela_banco = "profiles" 
+
+        # Consulta no banco se existe um registro com esse ID
+        response = (
+            supabase.table(tabela_banco)
+            .select("*")
+            .eq("id", user_id) 
+            .execute()
+        )
+
+        # Se a lista retornada for vazia, o usuário não existe na tabela personalizada
+        if not response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuário não encontrado na base de dados"
+            )
+
+        # Se encontrou, retorna 200 com os dados
+        return {
+            "id": user_id,
+            "email": user.email,
+            "db_data": response.data[0] # Retorna os dados extras da tabela
+        }
+
+    except Exception as e:
+        # Se já for um erro HTTP (ex: 404), relança ele
+        if isinstance(e, HTTPException):
+            raise e
+            
+        print(f"Erro ao verificar usuário: {e}")
+        raise
