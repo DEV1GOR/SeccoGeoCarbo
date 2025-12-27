@@ -11,12 +11,18 @@ class ResetPasswordRequest(BaseModel):
 class PropertyCreate(BaseModel):
     name: str
     location: str | None = None
-    area_hectares: float | None = None
+    total_area_ha: float | None = None
+    car_code: str | None = None
+    city: str | None = None
+    state: str | None = None
 
 class PropertyUpdate(BaseModel):
     name: Optional[str]
     location: Optional[str] | None = None
-    area_hectares: Optional[float] = None
+    total_area_ha: float | None = None
+    car_code: str | None = None
+    city: str | None = None
+    state: str | None = None
 
 class PropertyResponse(PropertyCreate):
     id: str
