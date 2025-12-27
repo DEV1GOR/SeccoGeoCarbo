@@ -1,9 +1,14 @@
-# Arquivos de ambiente (Não subir para o git)
+# Pastas do Node (Frontend)
+node_modules/
+dist/
 .env
-.venv
-env/
-venv/
 
-# Arquivos temporários do Python 
+# Pastas do Python (Backend)
 __pycache__/
+venv/
+.env
 *.pyc
+.venv/
+
+# Arquivos de sistema
+.DS_Store
