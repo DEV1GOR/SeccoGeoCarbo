@@ -171,7 +171,7 @@ def list_property(user = Depends(get_current_user)):
         supabase
         .table("properties")
         .select("*")
-        .eq("owner_id", user.id)
+        .eq("owner_id", str(user.id))
         .execute()  
     )
 
@@ -208,8 +208,8 @@ def update_property(property_id:UUID, data:PropertyUpdate, user = Depends(get_cu
     response = (
         supabase.table("properties")
         .update(update_data)
-        .eq("id", property_id)
-        .eq("owner_id", user.id)
+        .eq("id", str(property_id))
+        .eq("owner_id", str(user.id))
         .execute()
     )
 
@@ -229,8 +229,8 @@ def delete_property(property_id: UUID, user = Depends(get_current_user)):
         supabase
         .table("properties")
         .delete()
-        .eq("id",property_id)
-        .eq("owner_id",user.id)
+        .eq("id",str(property_id))
+        .eq("owner_id",str(user.id))
         .execute()
     )
 
@@ -259,7 +259,7 @@ def check_user_exists(user = Depends(get_current_user)):
         response = (
             supabase.table(tabela_banco)
             .select("*")
-            .eq("id", user_id) 
+            .eq("id", str(user_id)) 
             .execute()
         )
 
