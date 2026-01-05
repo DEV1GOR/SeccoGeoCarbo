@@ -1,16 +1,28 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from backend.auth import get_current_user
 from backend.database import get_supabase_client
 from backend.schemas import PropertyCreate, PropertyUpdate, ResetPasswordRequest, UserLogin, UserSign
 
+import requests
+from fastapi import Body
+from urllib.parse import urlparse
+import time
+
+from backend.geometry_service import extract_coords_from_kml, extract_coords_from_geojson
+
+
 # Cria o cliente supabase
 supabase = get_supabase_client()
+BUCKET = "property-files"
 
 # Inicializa a aplicação
 app = FastAPI(title="SeccoGeoCarbo API")
+
+API_PREFIX = "/api" # USE COMO PREFIXO PARA PADRONIZAR AS ROTAS
+
 
 # --- CONFIGURAÇÃO DO CORS (CORRIGIDO) ---
 origins = [
@@ -26,6 +38,7 @@ app.add_middleware(
     allow_headers=["*"],       # Libera todos os headers
 )
 
+
 # --- Rotas ---
 
 # Health Check: Verifica se a API está online
@@ -37,7 +50,7 @@ def health_check():
     }
 
 # --- ROTA: SIGN-UP (CRIAÇÃO DE CONTA) ---
-@app.post("/auth/signup")
+@app.post(f"{API_PREFIX}/auth/signup")
 def signup(user: UserSign):
     try:
         #Query para validar a existencia do email cadastrado
@@ -88,7 +101,7 @@ def signup(user: UserSign):
         )
 
 # --- ROTA: LOGIN ---
-@app.post("/auth/login")
+@app.post(f"{API_PREFIX}/auth/login")
 def login(user: UserLogin):
     try:
         # Tenta fazer login com email e senha no Supabase
@@ -113,7 +126,7 @@ def login(user: UserLogin):
     
 # --- ROTA: RESET PASSWORD ---
 
-@app.post("/auth/reset-password")
+@app.post(f"{API_PREFIX}/auth/reset-password")
 def reset_password(data: ResetPasswordRequest):
     try:
         supabase.auth.reset_password_email(data.email)
@@ -128,7 +141,7 @@ def reset_password(data: ResetPasswordRequest):
 
 # --- ROTA: ME ---
 
-@app.get("/me")
+@app.get(f"{API_PREFIX}/me")
 def me(user = Depends(get_current_user)):
     """
     Retorna os dados do usuário atualmente autenticado.
@@ -139,7 +152,7 @@ def me(user = Depends(get_current_user)):
     }
 
 # --- ROTA: PROPERTIES [CREATE] ---
-@app.post("/properties")
+@app.post(f"{API_PREFIX}/properties")
 def create_property(data: PropertyCreate, user = Depends(get_current_user)):
     """
     Cria uma nova propriedade.
@@ -162,7 +175,7 @@ def create_property(data: PropertyCreate, user = Depends(get_current_user)):
     return response.data
 
 # --- ROTA: PROPERTIES [READ] ---
-@app.get("/properties")
+@app.get(f"{API_PREFIX}/properties")
 def list_property(user = Depends(get_current_user)):
     """
     Lista todas as propriedades do usuário autenticado.
@@ -181,8 +194,8 @@ def list_property(user = Depends(get_current_user)):
     return response.data
 
 # --- ROTA: PROPERTIES [UPDATE]
-@app.put("/properties/{property_id}")
-def update_property(property_id:UUID, data:PropertyUpdate, user = Depends(get_current_user)):
+@app.put(f"{API_PREFIX}/properties/{{property_id}}")
+def update_property(property_id: UUID, data: PropertyUpdate, user=Depends(get_current_user)):
     """
     Atualiza uma propriedade existente.
     """
@@ -220,7 +233,7 @@ def update_property(property_id:UUID, data:PropertyUpdate, user = Depends(get_cu
 
 # --- ROTA: PROPERTIES [DELETE] ---
 
-@app.delete("/properties/{property_id}")
+@app.delete(f"{API_PREFIX}/properties/{{property_id}}")
 def delete_property(property_id: UUID, user = Depends(get_current_user)):
     """
     Remove uma propriedade do sistema.
@@ -242,7 +255,7 @@ def delete_property(property_id: UUID, user = Depends(get_current_user)):
     }
 
 # --- ROTA: VERIFICAÇÃO DE USUÁRIO (Checklist) ---
-@app.get("/api/users/me")
+@app.get(f"{API_PREFIX}/users/me")
 def check_user_exists(user = Depends(get_current_user)):
     """
     Checklist Backend:
@@ -284,3 +297,70 @@ def check_user_exists(user = Depends(get_current_user)):
             
         print(f"Erro ao verificar usuário: {e}")
         raise
+
+# --- ROTA: UPLOAD DE ARQUIVO DE GEOMETRIA [SERGIO] ---
+@app.post(f"{API_PREFIX}/upload-geometry")
+async def upload_geometry(file: UploadFile = File(...), user=Depends(get_current_user)):
+    """
+    Faz upload de KML, GeoJSON e retorna a URL.
+    """
+    allowed_extensions = ["kml", "geojson"] # Lista de extensões permitidas
+    ext = file.filename.split(".")[-1].lower() # Pega a extensão
+
+    if ext not in allowed_extensions: # Verifica se a extensão é válida
+        raise HTTPException(status_code=400, detail="Formato inválido. Use .kml ou .geojson")
+
+    new_filename = f"{uuid4()}.{ext}" # Cria um nome único para o arquivo
+    file_bytes = await file.read() # Lê o arquivo
+
+    try:
+        supabase.storage.from_(BUCKET).upload(new_filename, file_bytes) # Tenta fazer o upload do arquivo
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Falha ao fazer upload: {str(e)}")
+    
+
+    public_url = supabase.storage.from_(BUCKET).get_public_url(new_filename) # Pega a URL Pública do arquivo
+
+    return { # Retorna uma Mensagem, o Nome do Arquivo, a URL e a Extensão
+        "message": "Upload OK",
+        "filename": new_filename,
+        "file_url": public_url,
+        "extension": ext,
+    }
+
+# --- ROTA: ANALISAR ARQUIVO DE GEOMETRIA [SERGIO] ---
+@app.post(f"{API_PREFIX}/parse-geometry")
+def parse_geometry(file_url: str = Body(..., embed=True), user=Depends(get_current_user)):
+    """
+    Recebe URL de arquivo no Supabase e extrai coordenadas.
+    Suporta KML e GeoJSON.
+    """
+    path = urlparse(file_url).path # Pega o arquivo do link
+    ext = path.split(".")[-1].lower() # Pega a Extensão
+
+    try:
+        response = requests.get(file_url) 
+        response.raise_for_status()
+        file_bytes = response.content
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Não foi possível baixar o arquivo: {str(e)}")
+
+    coords = []
+
+    if ext == "kml":
+        coords = extract_coords_from_kml(file_bytes)
+
+    elif ext == "geojson":
+        coords = extract_coords_from_geojson(file_bytes)
+
+    else:
+        raise HTTPException(status_code=400, detail=f"Formato não suportado: {ext}")
+
+    if not coords:
+        raise HTTPException(status_code=400, detail="Não foi possível extrair coordenadas")
+
+    return {
+        "message": "Coordenadas extraídas com sucesso",
+        "coordinates": coords,
+        "total_polygons": len(coords)
+    }
