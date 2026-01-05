@@ -4,48 +4,52 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/Login.jsx";
 import ForgotPassword from "./pages/Forgot-Password.jsx";
 import Landing from "./pages/Landing";
+
+// Layout
 import DashboardLayout from "./layouts/DashboardLayout";
+
+// Dashboard Pages
 import DashboardHome from "./pages/Dashboard/Home";
+import NewProperty from "./pages/Dashboard/NewProperty";
+import Reports from "./pages/Dashboard/Reports";
+import Analysis from "./pages/Dashboard/Analysis";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Rota inicial */}
+        {/* Página pública */}
         <Route path="/" element={<Landing />} />
 
-        {/* Rotas de Autenticação */}
+        {/* Autenticação */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* 2. Rota do Dashboard (Nova Estrutura) */}
-        {/* Mudei de /app para /dashboard para ficar mais semântico */}
+        {/* Dashboard */}
         <Route path="/dashboard" element={<DashboardLayout />}>
-          {/* O index é a tela Home com os gráficos que criamos */}
+          {/* /dashboard */}
           <Route index element={<DashboardHome />} />
 
-          {/* Placeholders para os outros botões do Sidebar não darem erro 404 */}
-          <Route
-            path="monitoramento"
-            element={
-              <div className="p-8">🚧 Tela de Monitoramento em construção</div>
-            }
-          />
-          <Route
-            path="relatorio"
-            element={
-              <div className="p-8">🚧 Tela de Relatórios em construção</div>
-            }
-          />
+          {/* Propriedades */}
+          <Route path="propriedades/nova" element={<NewProperty />} />
+
+          {/* Monitoramento (visão geral) */}
+          <Route path="monitoramento" element={<Analysis />} />
+
+          {/* Detalhes da Análise (por fazenda) */}
+          <Route path="analysis/:id" element={<Analysis />} />
+
+          {/* Relatórios */}
+          <Route path="relatorio" element={<Reports />} />
+
+          {/* Configurações */}
           <Route
             path="configuracao"
-            element={
-              <div className="p-8">🚧 Tela de Configurações em construção</div>
-            }
+            element={<div className="p-8">🚧 Tela de Configurações em construção</div>}
           />
         </Route>
 
-        {/* Rota de Segurança (404) */}
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
