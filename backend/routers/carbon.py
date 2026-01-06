@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from backend.schemas import CarbonEstimateRequest, CarbonEstimateResponse
 from backend.services.carbon_service import carbon_service
-from backend.auth import get_current_user 
+from backend.services.auth_service import get_current_user 
 
 router = APIRouter()
+
+# --- Rotas ---
 
 @router.post("/estimate", response_model=CarbonEstimateResponse)
 def estimate_carbon_stock(

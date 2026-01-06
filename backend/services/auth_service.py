@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from backend.database import get_supabase_client
+from backend.services.database_service import get_supabase_client
 from gotrue.errors import AuthApiError
 
 supabase = get_supabase_client()
