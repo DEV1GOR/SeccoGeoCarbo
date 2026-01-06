@@ -34,3 +34,15 @@ class UserSign(BaseModel):
     password: str
     full_name: str
     
+# --- SCHEMAS PARA O MOTOR DE CARBONO ---
+
+class CarbonEstimateRequest(BaseModel):
+    area_hectares: float
+    # No futuro, podemos adicionar o GeoJSON aqui:
+    # geojson: dict | None = None 
+
+class CarbonEstimateResponse(BaseModel):
+    estimated_carbon_tons: float
+    confidence_score: float
+    message: str
+    

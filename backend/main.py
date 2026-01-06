@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from uuid import UUID, uuid4
 
 from backend.auth import get_current_user
+from backend.routers import carbon 
 from backend.database import get_supabase_client
 from backend.schemas import PropertyCreate, PropertyUpdate, ResetPasswordRequest, UserLogin, UserSign
 
@@ -364,3 +365,8 @@ def parse_geometry(file_url: str = Body(..., embed=True), user=Depends(get_curre
         "coordinates": coords,
         "total_polygons": len(coords)
     }
+
+    # --- ROTA: CARBON AI (STUB) ---
+# Adiciona as rotas definidas em backend/routers/carbon.py
+# URL Final: /api/carbon/estimate
+app.include_router(carbon.router, prefix=f"{API_PREFIX}/carbon", tags=["Carbon AI"])
