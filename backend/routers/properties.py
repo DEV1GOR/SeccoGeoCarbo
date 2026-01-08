@@ -13,7 +13,7 @@ supabase = get_supabase_client()
 
 # --- ROTA: PROPERTIES [CREATE] | [SERGIO] ---
 @router.post("/")
-def create_property(data: PropertyCreate, user=Depends(get_current_user)):
+def create_property(data: PropertyCreate, user=Depends(only_owner)):
     """
     Cria uma nova propriedade.
     """
@@ -55,7 +55,7 @@ def list_property(user=Depends(only_owner)):
 
 # --- ROTA: PROPERTIES [UPDATE] | [SERGIO] ---
 @router.put("/{property_id}")
-def update_property(property_id: UUID, data: PropertyUpdate, user=Depends(get_current_user)):
+def update_property(property_id: UUID, data: PropertyUpdate, user=Depends(only_owner)):
     """
     Atualiza uma propriedade existente.
     """
@@ -92,7 +92,7 @@ def update_property(property_id: UUID, data: PropertyUpdate, user=Depends(get_cu
 
 # --- ROTA: PROPERTIES [DELETE] | [SERGIO] ---
 @router.delete("/{property_id}")
-def delete_property(property_id: UUID, user=Depends(get_current_user)):
+def delete_property(property_id: UUID, user=Depends(only_owner)):
     """
     Remove uma propriedade do sistema.
     """
