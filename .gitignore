@@ -12,3 +12,6 @@ venv/
 
 # Arquivos de sistema
 .DS_Storenc
+
+# Imagens de satélite
+backend/data/images/
