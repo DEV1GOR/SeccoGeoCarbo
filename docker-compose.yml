@@ -1,0 +1,24 @@
+services:
+  backend:
+    build: .
+    container_name: secco-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - API_PREFIX=/api
+
+  frontend:
+    build: ./frontend
+    container_name: secco-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
