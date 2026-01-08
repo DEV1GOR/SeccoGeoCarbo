@@ -4,6 +4,7 @@ from uuid import UUID
 from backend.schemas import PropertyCreate, PropertyUpdate
 from backend.services.database_service import get_supabase_client
 from backend.services.auth_service import get_current_user
+from backend.dependencies import only_technician, only_owner
 
 router = APIRouter()
 supabase = get_supabase_client()
@@ -35,7 +36,7 @@ def create_property(data: PropertyCreate, user=Depends(get_current_user)):
 
 # --- ROTA: PROPERTIES [READ] | [SERGIO] ---
 @router.get("/")
-def list_property(user=Depends(get_current_user)):
+def list_property(user=Depends(only_owner)):
     """
     Lista todas as propriedades do usuário autenticado.
     """
