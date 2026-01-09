@@ -4,9 +4,12 @@ import {
   ArrowUpRight,
   Map as MapIcon,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import MapComponent from "../../components/Dashboard/MapComponent";
 
-// Pequeno componente para os Cards (Fica no mesmo arquivo para facilitar)
+/**
+ * Card de Estatística 
+ */
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
     <div className="flex justify-between items-start">
@@ -26,8 +29,48 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
   </div>
 );
 
+/**
+ * Card de Fazenda (NOVO)
+ * → Clicável
+ * → Leva para /analysis/:id
+ */
+const FarmCard = ({ farm, onClick }) => (
+  <div
+    onClick={onClick}
+    className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition"
+  >
+    <h3 className="text-lg font-semibold text-gray-800">
+      {farm.name}
+    </h3>
+
+    <p className="text-sm text-gray-500 mt-1">
+      Área Total: {farm.area} ha
+    </p>
+
+    <span className="inline-flex items-center mt-3 text-[11px] sm:text-xs font-medium bg-green-100 text-green-700 px-3 py-1 rounded-full whitespace-nowrap">
+    ✔ Análise disponível
+    </span>
+  </div>
+);
+
 const DashboardHome = () => {
-  // Coordenadas de Exemplo (Um quadrado em São Paulo para teste)
+  const navigate = useNavigate();
+
+  /**
+   * MOCK DE FAZENDAS
+   * Depois vira API
+   */
+  const farms = [
+    {
+      id: 1,
+      name: "Fazenda Boa Esperança",
+      area: 1200,
+    },
+  ];
+
+  /**
+   * Coordenadas de Exemplo (mapa)
+   */
   const exemploFazenda = [
     [-23.5505, -46.6333],
     [-23.5555, -46.6333],
@@ -36,14 +79,18 @@ const DashboardHome = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Título */}
+    <div className="space-y-8">
+      {/* TÍTULO */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Visão Geral</h1>
-        <p className="text-gray-500">Monitoramento de Carbono na Caatinga</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Visão Geral
+        </h1>
+        <p className="text-gray-500">
+          Monitoramento de Carbono na Caatinga
+        </p>
       </div>
 
-      {/* Cards de Estatísticas */}
+      {/* CARDS DE ESTATÍSTICAS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
           title="Estoque Total"
@@ -65,10 +112,29 @@ const DashboardHome = () => {
         />
       </div>
 
-      {/* ÁREA DO MAPA (Aqui está a mudança!) */}
+      {/* LISTA DE FAZENDAS (PARTE MAIS IMPORTANTE DA TASK) */}
+      <div>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Fazendas Monitoradas
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {farms.map((farm) => (
+            <FarmCard
+              key={farm.id}
+              farm={farm}
+              onClick={() => navigate(`/analysis/${farm.id}`)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* MAPA */}
       <div className="bg-white p-2 rounded-xl border border-gray-100 h-96 shadow-sm relative z-0">
-        {/* Chama o componente do mapa que criamos */}
-        <MapComponent coords={exemploFazenda} farmName="Fazenda Modelo" />
+        <MapComponent
+          coords={exemploFazenda}
+          farmName="Fazenda Boa Esperança"
+        />
       </div>
     </div>
   );
