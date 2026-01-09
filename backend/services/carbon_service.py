@@ -10,7 +10,7 @@ class CarbonEstimatorService:
         # Lógica Mock: Retornar valor baseado na área
         # Fórmula fictícia: Cada hectare tem em média 120 toneladas de carbono
         # Adicionamos um fator aleatório entre 0.9 e 1.1 para variar um pouco
-        base_factor = 120.0 
+        base_factor = 120.0     
         random_variation = random.uniform(0.9, 1.1)
         
         total_carbon = area_hectares * base_factor * random_variation
