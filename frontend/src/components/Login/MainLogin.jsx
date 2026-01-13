@@ -19,12 +19,15 @@ const LoginForm = () => {
     setError("");
 
     try {
-      // 1. Tenta fazer Login
-      const loginResponse = await fetch("http://127.0.0.1:8000/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      // 1. Tenta fazer Login (CORRIGIDO: adicionado /api)
+      const loginResponse = await fetch(
+        "http://127.0.0.1:8000/api/auth/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const loginData = await loginResponse.json();
 
@@ -57,7 +60,7 @@ const LoginForm = () => {
       setError(
         err.message === "Email ou senha incorretos"
           ? "Email ou senha incorretos."
-          : "Erro de conexão. Tente novamente."
+          : "Erro de conexão. Verifique se o Docker está rodando."
       );
       console.error(err);
     } finally {

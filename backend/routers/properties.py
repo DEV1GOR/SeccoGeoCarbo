@@ -4,6 +4,7 @@ from uuid import UUID
 from backend.schemas import PropertyCreate, PropertyUpdate
 from backend.services.database_service import get_supabase_client
 from backend.services.auth_service import get_current_user
+from backend.dependencies import only_technician, only_owner
 
 router = APIRouter()
 supabase = get_supabase_client()
@@ -12,7 +13,7 @@ supabase = get_supabase_client()
 
 # --- ROTA: PROPERTIES [CREATE] | [SERGIO] ---
 @router.post("/")
-def create_property(data: PropertyCreate, user=Depends(get_current_user)):
+def create_property(data: PropertyCreate, user=Depends(only_owner)):
     """
     Cria uma nova propriedade.
     """
@@ -35,7 +36,7 @@ def create_property(data: PropertyCreate, user=Depends(get_current_user)):
 
 # --- ROTA: PROPERTIES [READ] | [SERGIO] ---
 @router.get("/")
-def list_property(user=Depends(get_current_user)):
+def list_property(user=Depends(only_owner)):
     """
     Lista todas as propriedades do usuário autenticado.
     """
@@ -54,7 +55,7 @@ def list_property(user=Depends(get_current_user)):
 
 # --- ROTA: PROPERTIES [UPDATE] | [SERGIO] ---
 @router.put("/{property_id}")
-def update_property(property_id: UUID, data: PropertyUpdate, user=Depends(get_current_user)):
+def update_property(property_id: UUID, data: PropertyUpdate, user=Depends(only_owner)):
     """
     Atualiza uma propriedade existente.
     """
@@ -91,7 +92,7 @@ def update_property(property_id: UUID, data: PropertyUpdate, user=Depends(get_cu
 
 # --- ROTA: PROPERTIES [DELETE] | [SERGIO] ---
 @router.delete("/{property_id}")
-def delete_property(property_id: UUID, user=Depends(get_current_user)):
+def delete_property(property_id: UUID, user=Depends(only_owner)):
     """
     Remove uma propriedade do sistema.
     """

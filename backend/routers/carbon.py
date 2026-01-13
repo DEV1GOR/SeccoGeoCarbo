@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from backend.schemas import CarbonEstimateRequest, CarbonEstimateResponse
 from backend.services.carbon_service import carbon_service
 from backend.services.auth_service import get_current_user 
+from backend.dependencies import only_technician
 
 router = APIRouter()
 
@@ -10,7 +11,7 @@ router = APIRouter()
 @router.post("/estimate", response_model=CarbonEstimateResponse)
 def estimate_carbon_stock(
     data: CarbonEstimateRequest, 
-    current_user = Depends(get_current_user)
+    current_user = Depends(only_technician)
 ):
     """
     Recebe a área em hectares e retorna a estimativa de carbono (Stub/Mock).

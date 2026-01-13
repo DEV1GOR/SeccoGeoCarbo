@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 # Importação das rotas
 from backend.routers import auth, users, properties, geometry, carbon
 
-#carregamento do .env
 from dotenv import load_dotenv
 load_dotenv()
 
