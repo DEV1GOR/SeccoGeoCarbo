@@ -2,9 +2,11 @@ import requests
 import os
 from datetime import datetime
 
-from services.sentinel.auth import get_sentinel_token
-from services.sentinel.repository import save_satellite_metadata
+from backend.services.sentinel.auth import get_sentinel_token
+from backend.services.sentinel.repository import save_satellite_metadata
+from backend.services.database_service import get_supabase_client
 
+supabase = get_supabase_client()
 
 PROCESS_URL = "https://services.sentinel-hub.com/api/v1/process"
 
@@ -95,3 +97,9 @@ def get_latest_sentinel_image(geometry):
 
     # retorna caminho do arquivo
     return output_path
+
+
+# [SERGIO]
+def save_carbon_estimation(data: dict):
+    response = supabase.table("carbon_estimations").insert(data).execute()
+    return response.data    

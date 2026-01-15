@@ -1,4 +1,4 @@
-from services.database_service import get_supabase_client
+from backend.services.database_service import get_supabase_client
 
 supabase = get_supabase_client()
 

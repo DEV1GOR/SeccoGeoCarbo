@@ -12,3 +12,8 @@ venv/
 
 # Arquivos de sistema
 .DS_Storenc
+
+# Dados gerados
+data/
+*.tiff
+*.png
