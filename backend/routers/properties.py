@@ -1,13 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from uuid import UUID
+from jinja2 import Environment, FileSystemLoader
+from io import BytesIO
+from weasyprint import HTML, CSS
+from io import BytesIO
 
 from backend.schemas import PropertyCreate, PropertyUpdate
 from backend.services.database_service import get_supabase_client
-from backend.services.auth_service import get_current_user
 from backend.dependencies import only_technician, only_owner
 
 router = APIRouter()
 supabase = get_supabase_client()
+
+env = Environment(loader=FileSystemLoader("templates"))
 
 # --- Rotas ---
 
@@ -109,3 +114,70 @@ def delete_property(property_id: UUID, user=Depends(only_owner)):
         raise HTTPException(status_code=400, detail="Propriedade não encontrada ou não pertence ao usuário")
 
     return {"message": "Propriedade removida com sucesso"}
+
+# --- ROTA: PROPERTIES [REPORT] | [LEMOS] ---
+@router.get("/{property_id}/report")
+def generate_property_report(property_id: UUID, user=Depends(only_technician)):
+    """
+    Gera um relatório detalhado da propriedade em PDF usando WeasyPrint.
+    """
+    #Buscando informações da propriedade
+    response = (
+        supabase
+        .table("properties")
+        .select("*")
+        .eq("id", str(property_id))
+        .execute()
+    )
+
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Propriedade não encontrada")
+
+    property_info = response.data[0]
+    
+    report_data = {
+        "property": {
+            "name": property_info.get("name"),
+            "location": property_info.get("location"),
+            "total_area_ha": property_info.get("total_area_ha"),
+            "car_code": property_info.get("car_code"),
+            "city": property_info.get("city"),
+            "state": property_info.get("state")
+        }
+    }
+
+    #Renderizando o template HTML
+    try:
+        template = env.get_template("property_report.html")
+        html_content = template.render(**report_data)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Erro ao renderizar template: {str(e)}"
+        )
+
+    #Gerando o PDF com WeasyPrint
+    try:
+        pdf_buffer = BytesIO()
+        
+        HTML(string=html_content).write_pdf(pdf_buffer)
+        
+        pdf_content = pdf_buffer.getvalue()
+        pdf_buffer.close()
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Erro ao gerar PDF: {str(e)}"
+        )
+
+    # Prepare o nome do arquivo
+    filename = f"relatorio_{property_info.get('name', 'propriedade').replace(' ', '_')}.pdf"
+    
+    return Response(
+        content=pdf_content,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )

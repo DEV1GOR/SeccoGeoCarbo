@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Propriedade</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11pt;
+            color: #333;
+        }
+        
+        .header {
+            display: table;
+            width: 100%;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #7BA05B;
+        }
+        
+        .header-left {
+            display: table-cell;
+            width: 40%;
+            vertical-align: middle;
+        }
+        
+        .logo {
+            font-size: 32pt;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .logo .green {
+            color: #7BA05B;
+        }
+        
+        .header-right {
+            display: table-cell;
+            width: 60%;
+            text-align: right;
+            vertical-align: middle;
+        }
+        
+        .header-right h1 {
+            font-size: 28pt;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: 1px;
+        }
+        
+        .form-section {
+            margin-bottom: 25px;
+        }
+        
+        .form-field {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .form-field label {
+            display: block;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 10pt;
+        }
+        
+        .form-field .value {
+            border: 2px solid #7BA05B;
+            border-left: 8px solid #7BA05B;
+            padding: 10px 15px;
+            background-color: #f9f9f9;
+            min-height: 35px;
+        }
+        
+        .two-columns {
+            display: table;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .column {
+            display: table-cell;
+            width: 48%;
+            padding-right: 2%;
+        }
+        
+        .column:last-child {
+            padding-right: 0;
+            padding-left: 2%;
+        }
+        
+        .observations {
+            margin-top: 20px;
+        }
+        
+        .observations label {
+            display: block;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 10pt;
+        }
+        
+        .observations .value {
+            border: 2px solid #7BA05B;
+            border-left: 8px solid #7BA05B;
+            padding: 15px;
+            background-color: #f9f9f9;
+            min-height: 150px;
+        }
+        
+        .empty-value {
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="https://media.licdn.com/dms/image/v2/D4D0BAQGY5wYdg0popg/company-logo_200_200/B4DZsUeKo2G0AM-/0/1765575014941?e=2147483647&v=beta&t=AZi-mb2Q0TdcLsa2Y81AfgyfDjddKItwJqwypWysM8Q" alt="SECCO Logo" style="height:200px;align-self: center;">
+            <div class="logo">SECCO</div>
+        </div>
+        <div class="header-right">
+            <h1>RELATÓRIO DE<br/>PROPRIEDADE</h1>
+        </div>
+    </div>
+    
+    <div class="form-section">
+        <div class="form-field">
+            <label>Nome da Propriedade:</label>
+            <div class="value">
+                {{ property.name if property.name else '' }}
+            </div>
+        </div>
+    </div>
+    
+    <div class="two-columns">
+        <div class="column">
+            <div class="form-field">
+                <label>Localização:</label>
+                <div class="value">
+                    {{ property.location if property.location else '' }}
+                </div>
+            </div>
+            
+            <div class="form-field">
+                <label>Município:</label>
+                <div class="value">
+                    {{ property.city if property.city else '' }}
+                </div>
+            </div>
+            
+            <div class="form-field">
+                <label>Estado:</label>
+                <div class="value">
+                    {{ property.state if property.state else '' }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="column">
+            <div class="form-field">
+                <label>Área Total (ha):</label>
+                <div class="value">
+                    {{ property.total_area_ha if property.total_area_ha else '' }}
+                </div>
+            </div>
+            
+            <div class="form-field">
+                <label>Código CAR:</label>
+                <div class="value">
+                    {{ property.car_code if property.car_code else '' }}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="observations">
+        <label>Observações / Mapa</label>
+        <div class="value">
+            <!-- Área para observações ou mapa -->
+        </div>
+    </div>
+</body>
+</html>
