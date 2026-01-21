@@ -14,6 +14,9 @@ import NewProperty from "./pages/Dashboard/NewProperty";
 import Reports from "./pages/Dashboard/Reports";
 import Analysis from "./pages/Dashboard/Analysis";
 
+// Página de detalhes (fora do dashboard)
+import AnalysisDetails from "./pages/AnalysisDetails";
+
 function App() {
   return (
     <BrowserRouter>
@@ -25,6 +28,10 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
+        {/* 🔹 ROTA DE DETALHES (FORA DO DASHBOARD) */}
+        {/* Exemplo: /analysis/12 */}
+        <Route path="/analysis/:id" element={<AnalysisDetails />} />
+
         {/* Dashboard */}
         <Route path="/dashboard" element={<DashboardLayout />}>
           {/* /dashboard */}
@@ -35,9 +42,6 @@ function App() {
 
           {/* Monitoramento (visão geral) */}
           <Route path="monitoramento" element={<Analysis />} />
-
-          {/* Detalhes da Análise (por fazenda) */}
-          <Route path="analysis/:id" element={<Analysis />} />
 
           {/* Relatórios */}
           <Route path="relatorio" element={<Reports />} />

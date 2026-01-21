@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, Any
+
 
 class UserLogin(BaseModel):
     email: str
@@ -28,7 +29,6 @@ class PropertyResponse(PropertyCreate):
     id: str
     owner_id: str
 
-
 class UserSign(BaseModel):
     email: str
     password: str
@@ -37,12 +37,12 @@ class UserSign(BaseModel):
 # --- SCHEMAS PARA O MOTOR DE CARBONO ---
 
 class CarbonEstimateRequest(BaseModel):
-    area_hectares: float
-    # No futuro, podemos adicionar o GeoJSON aqui:
-    # geojson: dict | None = None 
+    geometry: Dict
+    index_type: Optional[str] = "savi"  # default para Caatinga
 
 class CarbonEstimateResponse(BaseModel):
-    estimated_carbon_tons: float
-    confidence_score: float
-    message: str
-    
+    total_carbon_tons: float
+    carbon_per_hectare: float
+    ndvi_mean: float
+    savi_mean: float
+    heatmap_url: str
