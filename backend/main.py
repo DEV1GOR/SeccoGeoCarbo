@@ -82,3 +82,4 @@ app.include_router(
     prefix=f"{API_PREFIX}/carbon",
     tags=["Carbon AI"]
 )
+

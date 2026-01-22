@@ -6,6 +6,7 @@ from backend.services.sentinel.visualization import generate_carbon_heatmap
 from backend.services.sentinel.process import save_carbon_estimation
 from datetime import datetime
 
+# [SERGIO]
 def process_carbon_estimation(geometry: dict, index_type="savi"):
 
     # 1. Baixa imagem

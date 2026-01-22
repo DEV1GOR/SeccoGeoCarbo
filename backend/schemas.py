@@ -46,3 +46,8 @@ class CarbonEstimateResponse(BaseModel):
     ndvi_mean: float
     savi_mean: float
     heatmap_url: str
+
+class CarbonTaskResponse(BaseModel):
+    task_id: str
+    status: str
+    result: dict | None = None
